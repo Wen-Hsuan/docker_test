@@ -7,7 +7,7 @@
 
 #Dockerfile.jupyter-python-ultra-pack
 
-FROM Wen-Hsuan/Docker
+FROM Wen-Hsuan/docker_test
 
 WORKDIR /jupyter
 

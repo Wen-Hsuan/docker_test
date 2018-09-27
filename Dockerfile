@@ -1,0 +1,47 @@
+# FROM –   BASE IMAGE FROM REPOSITORY
+# WORKDIR – container 工作目錄
+# COPY– 將本地端資料複製到container裡
+# EXPOSE – open container port
+# Run  --  build image  中執行的 cmd
+# CMD –  build container 執行cmd
+
+#Dockerfile.jupyter-python-ultra-pack
+
+FROM Wen-Hsuan/Docker
+
+WORKDIR /jupyter
+
+RUN yum install -y gcc gcc-c++ git make
+
+RUN conda create -y -n py3 python=3 anaconda && \
+    source activate py3 && \
+    conda install -y ipykernel && \
+    ipython kernel install --user && \
+    # unixodbc is removed from anaconda. if not, the teradata package in anaconda wouldn't work
+    conda uninstall -y unixodbc && \
+    conda install -y teradata=15.10.0.20 && \
+
+    conda create -y -n py2 python=2 anaconda && \
+    source activate py2 && \
+    conda install -y ipykernel && \
+    ipython kernel install --user && \
+    # unixodbc is removed from anaconda. if not, the teradata package in anaconda wouldn't work
+    conda uninstall -y unixodbc && \
+    conda install -y teradata=15.10.0.20 && \
+    conda clean -y --all
+
+# Install xgboost
+RUN cd /opt && \
+    git clone --recursive https://github.com/dmlc/xgboost && \
+    cd xgboost && \
+    git submodule init && \
+    git submodule update && \
+    ./build.sh && \
+    cd python-package && \
+    source activate py3 && python setup.py install && \
+    source activate py2 && python setup.py install && \
+    cd / && \
+    rm -rf /opt/xgboost
+
+CMD source activate py3 && \
+    jupyter notebook --ip='*' --port=8888 --NotebookApp.token='' --allow-root --no-browser

@@ -7,7 +7,7 @@
 
 FROM menhswu/docker_test
 
-COPY tdodbc1510__linux_indep.15.10.01.05-1.tar.gz /opt/teradata_install/
+COPY menhswu/docker-python/tdodbc1510__linux_indep.15.10.01.05-1.tar.gz /opt/teradata_install/
 RUN cd /opt/teradata_install && \
     tar -xvf tdodbc1510__linux_indep.15.10.01.05-1.tar.gz && \
     tar -xvf tdicu1510__linux_indep.15.10.01.02-1.tar.gz && \

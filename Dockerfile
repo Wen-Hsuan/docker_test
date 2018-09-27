@@ -1,40 +1,25 @@
-
+# FROM –   BASE IMAGE FROM REPOSITORY
+# WORKDIR – container 工作目錄
+# COPY– 將本地端資料複製到container裡
+# EXPOSE – open container port
+# Run  --  build image  中執行的 cmd
+# CMD –  build container 執行cmd
 
 FROM menhswu/docker_test
 
-WORKDIR /jupyter
-
-RUN yum install -y gcc gcc-c++ git make
-
-RUN conda create -y -n py3 python=3 anaconda && \
-    source activate py3 && \
-    conda install -y ipykernel && \
-    ipython kernel install --user && \
-    # unixodbc is removed from anaconda. if not, the teradata package in anaconda wouldn't work
-    conda uninstall -y unixodbc && \
-    conda install -y teradata=15.10.0.20 && \
-
-    conda create -y -n py2 python=2 anaconda && \
-    source activate py2 && \
-    conda install -y ipykernel && \
-    ipython kernel install --user && \
-    # unixodbc is removed from anaconda. if not, the teradata package in anaconda wouldn't work
-    conda uninstall -y unixodbc && \
-    conda install -y teradata=15.10.0.20 && \
-    conda clean -y --all
-
-# Install xgboost
-RUN cd /opt && \
-    git clone --recursive https://github.com/dmlc/xgboost && \
-    cd xgboost && \
-    git submodule init && \
-    git submodule update && \
-    ./build.sh && \
-    cd python-package && \
-    source activate py3 && python setup.py install && \
-    source activate py2 && python setup.py install && \
+COPY tdodbc1510__linux_indep.15.10.01.05-1.tar.gz /opt/teradata_install/
+RUN cd /opt/teradata_install && \
+    tar -xvf tdodbc1510__linux_indep.15.10.01.05-1.tar.gz && \
+    tar -xvf tdicu1510__linux_indep.15.10.01.02-1.tar.gz && \
+    rpm -ivh --nodeps tdicu1510/tdicu1510-15.10.01.02-1.noarch.rpm && \
+    tar -xvf TeraGSS_linux_x64__linux_indep.15.10.04.02-1.tar.gz && \
+    rpm -ivh --nodeps TeraGSS/TeraGSS_linux_x64-15.10.04.02-1.noarch.rpm && \
+    tar -xvf tdodbc1510__linux_indep.15.10.01.05-1.tar.gz && \
+    rpm -ivh --nodeps tdodbc1510/tdodbc1510-15.10.01.05-1.noarch.rpm && \
+    cp /opt/teradata/client/15.10/odbc_64/odbc.ini $HOME/.odbc.ini && \
+    cp /opt/teradata/client/15.10/odbc_64/odbcinst.ini $HOME/.odbcinst.ini && \
     cd / && \
-    rm -rf /opt/xgboost
+    rm -rf /opt/teradata_install
 
-CMD source activate py3 && \
-    jupyter notebook --ip='*' --port=8888 --NotebookApp.token='' --allow-root --no-browser
+RUN conda install -y teradata=15.10.0.20 && \
+    conda clean -y --all
